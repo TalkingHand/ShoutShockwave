@@ -1,0 +1,8 @@
+{
+    "IGUI_perks_Shout": "Shout",
+    "IGUI_ShoutShockwave_Title": "Shout Shockwave",
+    "IGUI_ShoutShockwave_Ring": "Shockwave ring",
+    "IGUI_ShoutShockwave_Ring_tooltip": "Draw a ring on the ground that spreads from the person who shouts.",
+    "IGUI_ShoutShockwave_Dust": "Dust on knocked-down zombies",
+    "IGUI_ShoutShockwave_Dust_tooltip": "From Shout level 8, show a puff of dust on zombies your shout knocks down."
+}

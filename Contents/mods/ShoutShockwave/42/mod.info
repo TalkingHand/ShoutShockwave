@@ -1,0 +1,8 @@
+name=Shout Shockwave
+id=ShoutShockwave
+description=Shouting pushes, knocks down, dazes and hurts nearby zombies. A new Shout skill unlocks the effects; louder shouts reach further and tire you faster.
+poster=poster.png
+author=TalkingHand
+url=https://github.com/TalkingHand/ShoutShockwave
+modversion=0.1.0
+versionMin=42.0

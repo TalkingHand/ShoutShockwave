@@ -1,0 +1,19 @@
+{
+    "Sandbox_ShoutShockwave": "Shout Shockwave",
+    "Sandbox_ShoutShockwave_Stagger": "Shout: stagger",
+    "Sandbox_ShoutShockwave_Stagger_tooltip": "Shouts can make zombies stagger back. Unlocked at Shout level 2.",
+    "Sandbox_ShoutShockwave_Knockdown": "Shout: knock down",
+    "Sandbox_ShoutShockwave_Knockdown_tooltip": "Shouts can knock zombies down. Unlocked at Shout level 4.",
+    "Sandbox_ShoutShockwave_Daze": "Shout: daze",
+    "Sandbox_ShoutShockwave_Daze_tooltip": "Shouts can make zombies lose their target for a few seconds. Unlocked at Shout level 6.",
+    "Sandbox_ShoutShockwave_Damage": "Shout: damage",
+    "Sandbox_ShoutShockwave_Damage_tooltip": "Shouts can hurt and kill zombies. Unlocked at Shout level 8.",
+    "Sandbox_ShoutShockwave_DamageMultiplier": "Shout damage multiplier",
+    "Sandbox_ShoutShockwave_DamageMultiplier_tooltip": "Multiplies shout damage. At 1, a loud megaphone shout from a skilled survivor kills most normal zombies next to them.",
+    "Sandbox_ShoutShockwave_EnduranceMultiplier": "Shout endurance cost multiplier",
+    "Sandbox_ShoutShockwave_EnduranceMultiplier_tooltip": "Multiplies the endurance each shout costs. 0 makes shouting free.",
+    "Sandbox_ShoutShockwave_Windows": "Shout: break windows",
+    "Sandbox_ShoutShockwave_Windows_tooltip": "From Shout level 8, shouts break nearby building windows (the louder, the further). Vehicle windows are never affected.",
+    "Sandbox_ShoutShockwave_WindowRange": "Shout window range multiplier",
+    "Sandbox_ShoutShockwave_WindowRange_tooltip": "Multiplies how far shouts break windows. At 1, a Shout level 8 shout breaks every window within about 13 tiles; a skilled megaphone shout, about 20 tiles."
+}

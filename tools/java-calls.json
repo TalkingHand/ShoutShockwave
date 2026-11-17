@@ -1,0 +1,79 @@
+{
+  "IsoZombie": [
+    "knockDown",
+    "setStaggerBack",
+    "setHitReaction",
+    "setPlayerAttackPosition",
+    "setHitForce",
+    "reportEvent",
+    "setTarget",
+    "setUseless",
+    "getHealth",
+    "setHealth",
+    "Kill",
+    "getOnlineID",
+    "isLocal",
+    "getOwner",
+    "isDead",
+    "isOnFloor",
+    "isKnockedDown",
+    "getX",
+    "getY",
+    "getZ"
+  ],
+  "IsoPlayer": [
+    "getPerkLevel",
+    "getPrimaryHandItem",
+    "getSecondaryHandItem",
+    "getWornItems",
+    "isSneaking",
+    "isCanShout",
+    "playEmote",
+    "SayShout",
+    "transmitPlayerVoiceSound",
+    "playSound",
+    "getStats",
+    "getVehicle",
+    "isLocalPlayer",
+    "isBehind",
+    "getOnlineID",
+    "Callout"
+  ],
+  "InventoryItem": [
+    "hasTag",
+    "getShoutType",
+    "getShoutMultiplier"
+  ],
+  "WornItems": [
+    "size",
+    "get"
+  ],
+  "WornItem": [
+    "getItem"
+  ],
+  "Stats": [
+    "get",
+    "set"
+  ],
+  "IsoCell": [
+    "getZombieList"
+  ],
+  "Core": [
+    "getZoom",
+    "getScreenWidth",
+    "getScreenHeight",
+    "isTutorial"
+  ],
+  "GlobalObject": [
+    "addSound",
+    "addXp",
+    "isoToScreenX",
+    "isoToScreenY",
+    "getPlayerByOnlineID",
+    "sendClientCommand",
+    "sendServerCommand",
+    "getTimestampMs",
+    "getTexture",
+    "isClient"
+  ]
+}

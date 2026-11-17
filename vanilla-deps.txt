@@ -1,0 +1,30 @@
+# checked: 42.22.2
+# kind	target	note
+lua-wrap	IsoPlayer:Callout	__classmetatables[IsoPlayer.class].__index.Callout replaced in OnGameStart; original called when the shout is at least as loud as vanilla, on errors, in vehicles, tutorial, and for non-local players. Catches only Lua callers.
+lua-call	ISEmoteRadialMenu.onKeyReleased	client/ISUI/ISEmoteRadialMenu.lua: Q released < 450 ms -> playerObj:Callout(true) (one of the Lua callers we catch)
+lua-call	ISEmoteRadialMenu:emote	client/ISUI/ISEmoteRadialMenu.lua: "shout" emote -> Callout(false)
+lua-call	ISVehicleMenu.onKeyPressed	client/Vehicles/ISUI/ISVehicleMenu.lua: passenger shout key -> Callout() (we pass to vanilla: in vehicle)
+lua-call	ISDPadWheels.onShout	client/ISUI/ISDPadWheels.lua: -> Callout()
+lua-call	ISUIElement	client/ISUI/ISUIElement.lua: overlay for ring/puff/flash drawing
+java-call	see tools/java-calls.json	checked with _tools/jcheck.py
+event	OnGameStart, OnTick, OnClientCommand, OnServerCommand	module "ShoutShockwave", commands "shout" (client->server) and "fx" (server->clients)
+data	ItemTag.MEGAPHONE	megaphone detection, same as vanilla Callout
+data	Perks.Strength, Perks.Fitness, Perks.PhysicalCategory	PhysicalCategory is the parent of our Voice perk (media/perks.txt)
+data	CharacterStat.ENDURANCE	read/write endurance
+data	IGUI_PlayerText_Callout1New..3New, IGUI_PlayerText_Callout1Sneak..3Sneak	vanilla shout texts reused in our quieter shout
+data	voice sounds ShoutHey, ShoutMegaphoneHey, WhisperHey, WhisperPsst, WhisperMegaphoneHey, WhisperMegaphonePsst	transmitPlayerVoiceSound names from vanilla Callout
+sandbox	ShoutShockwave.Stagger/Knockdown/Daze/Damage/DamageMultiplier/EnduranceMultiplier	own options
+assume	IsoGameCharacter.Callout radius rules	zombie/characters/IsoGameCharacter.java Callout(): primary-hand MEGAPHONE tag -> 90 else 30; sneaking -> 18/6; first ShoutType item (primary, secondary, worn) multiplies by ShoutMultiplier. Copied into F.vanillaRadius; if vanilla changes, our "quieter than vanilla" decision and extra addSound go wrong.
+assume	Callout body	our luaShout copies texts, voice sounds, addSound(r, r), SayShout, emote "shout". Lua cannot set IsoGameCharacter.callOut, so tamed animals (IsoAnimal, acceptance >= 40) do not come to the quieter Lua shout; BodyDamage boredom check also reads callOut.
+assume	CustomPerks	zombie/characters/skills/CustomPerks: media/perks.txt in the version dir, VERSION = 1, perk <id> { parent, translation (IGUI_perks_<translation>), passive, xp1..xp10 }; Perks.<id> set in Lua by initLua
+assume	MoodleStat.ENDURANCE thresholds 0.75 / 0.5 / 0.25 / 0.1	our fatigue factor uses the same thresholds on the endurance value (zombie/characters/Moodles/MoodleStat)
+assume	zombie health by toughness	IsoZombie: tough 3.5+0..0.3, normal 1.8+0..0.3, fragile 0.5+0..0.3; our health factor uses 1.9 as normal
+assume	knockDown	IsoZombie.knockDown(behind): setKnockedDown, setStaggerBack, setHitReaction(""), setPlayerAttackPosition, setHitForce(1), reportEvent("wasHit"); our stagger copies it without setKnockedDown
+assume	isBehind	IsoGameCharacter.isBehind(chr): true when this is behind chr (chr faces away); we call player:isBehind(zombie)
+assume	MP zombie authority	IsoZombie.getOwner() (UdpConnection) nil on the server = server simulates it; ZombiePacket syncs realState (StaggerBack, OnGround, ...) and health to clients. Client-owned zombies get effects from the "fx" command where zombie:isLocal(). MP not tested.
+assume	addXp global	LuaManager.GlobalObject.addXp: server -> GameServer.addXp, single player -> AddXP, MP client -> nothing
+java-call	BaseCharacterSoundEmitter:playSound/setVolume/isPlaying	rumble ShoutShockwave_Rumble (media/scripts/ShoutShockwave_sounds.txt, file = media/sound/ShoutShockwave_Rumble.ogg)
+assume	sound script clip "file = media/sound/..."	vanilla example generated/sounds/zombies/sounds_zombie_voice_tutorial.txt
+java-call	IsoGridSquare:getWindow, IsoWindow:isDestroyed/isBarricaded/IsOpen/isInvincible/smashWindow	window breaking (building windows only)
+assume	IsoWindow.smashWindow()	= smashWindow(false, true): sound "SmashWindow", world sound radius 10, alarm, GameClient/GameServer sync (zombie/iso/objects/IsoWindow.java)
+sandbox	ShoutShockwave.Windows	own option

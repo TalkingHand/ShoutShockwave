@@ -1,0 +1,12 @@
+module Base
+{
+    sound ShoutShockwave_Rumble
+    {
+        category = Player,
+        clip
+        {
+            file = media/sound/ShoutShockwave_Rumble.ogg,
+            distanceMax = 60,
+        }
+    }
+}

@@ -1,0 +1,71 @@
+VERSION = 1,
+
+option ShoutShockwave.Stagger
+{
+    type = boolean,
+    default = true,
+    page = ShoutShockwave,
+    translation = ShoutShockwave_Stagger,
+}
+
+option ShoutShockwave.Knockdown
+{
+    type = boolean,
+    default = true,
+    page = ShoutShockwave,
+    translation = ShoutShockwave_Knockdown,
+}
+
+option ShoutShockwave.Daze
+{
+    type = boolean,
+    default = true,
+    page = ShoutShockwave,
+    translation = ShoutShockwave_Daze,
+}
+
+option ShoutShockwave.Damage
+{
+    type = boolean,
+    default = true,
+    page = ShoutShockwave,
+    translation = ShoutShockwave_Damage,
+}
+
+option ShoutShockwave.DamageMultiplier
+{
+    type = double,
+    default = 1.0,
+    min = 0.0,
+    max = 5.0,
+    page = ShoutShockwave,
+    translation = ShoutShockwave_DamageMultiplier,
+}
+
+option ShoutShockwave.EnduranceMultiplier
+{
+    type = double,
+    default = 1.0,
+    min = 0.0,
+    max = 5.0,
+    page = ShoutShockwave,
+    translation = ShoutShockwave_EnduranceMultiplier,
+}
+
+option ShoutShockwave.Windows
+{
+    type = boolean,
+    default = true,
+    page = ShoutShockwave,
+    translation = ShoutShockwave_Windows,
+}
+
+option ShoutShockwave.WindowRange
+{
+    type = double,
+    default = 1.0,
+    min = 0.1,
+    max = 5.0,
+    page = ShoutShockwave,
+    translation = ShoutShockwave_WindowRange,
+}
