@@ -15,7 +15,7 @@ Sandbox options: stagger / knockdown / daze / damage / windows on-off, damage mu
 
 ## Install
 
-- Steam Workshop: (link after upload)
+- Steam Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=3841497037
 - Manual: copy `Contents/mods/ShoutShockwave` into `%USERPROFILE%\Zomboid\mods\`.
 
 ## Compatibility

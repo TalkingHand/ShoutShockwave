@@ -1,4 +1,5 @@
 version=1
+id=3841497037
 title=[42.22.2] Shout Shockwave
 description=[h1]Shout Shockwave[/h1]
 description=Your shout becomes a weapon. Train the new [b]Shout[/b] skill and a yell staggers, knocks down, dazes and finally hurts the zombies around you, and shatters the windows of nearby buildings.
