@@ -22,7 +22,8 @@ F.SOFTCAP_EXP = 0.35
 F.SNEAK_FACTOR = 0.6
 F.HEALTH_REF = 1.9
 F.HEALTH_MIN, F.HEALTH_MAX = 0.7, 1.2
-F.ENDURANCE_BASE = 0.04           -- per shout, x (1.3 - 0.06 * fitness)
+F.ENDURANCE_BASE = 0.135          -- per shout, x (1.3 - 0.06 * fitness) x (1 - 0.05 * shout level)
+F.ENDURANCE_VOICE = 0.05          -- Shout 0, Fitness 5: the second shout brings the first tired moodle (0.75)
 F.SNEAK_ENDURANCE = 0.3
 F.FATIGUE = { { 0.75, 1.0 }, { 0.5, 0.9 }, { 0.25, 0.8 }, { 0.1, 0.65 } } -- endurance above -> factor, else 0.5
 F.FATIGUE_LAST = 0.5
@@ -115,7 +116,8 @@ end
 
 function F.enduranceCost(player)
 	local fit = player:getPerkLevel(Perks.Fitness)
-	local c = F.ENDURANCE_BASE * (1.3 - 0.06 * fit) * F.opt("EnduranceMultiplier", 1.0)
+	local voice = F.voiceLevel(player)
+	local c = F.ENDURANCE_BASE * (1.3 - 0.06 * fit) * (1 - F.ENDURANCE_VOICE * voice) * F.opt("EnduranceMultiplier", 1.0)
 	if player:isSneaking() then c = c * F.SNEAK_ENDURANCE end
 	return c
 end

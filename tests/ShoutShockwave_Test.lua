@@ -28,7 +28,7 @@ local function near(a, b, eps) return a and b and math.abs(a - b) <= (eps or 0.0
 local function protect(on)
 	local pl = p()
 	if not pl then return end
-	pl:setGodMod(on)
+	pl:setGodMod(on and not T.noGod) -- god mode resets endurance every frame
 	pl:setInvisible(on)
 	pl:setZombiesDontAttack(on)
 	if pl.setGhostMode then pl:setGhostMode(on) end
@@ -185,7 +185,7 @@ local function sLine()
 	local e0, xp0 = endurance(), voiceXP()
 	shout()
 	local spent = e0 - endurance()
-	check(near(spent, 0.04, 0.002), "endurance cost 0.04 at fitness 5", spent)
+	check(near(spent, 0.135 * 0.6, 0.002), "endurance cost 0.081 at shout 8, fitness 5", spent)
 	check(zs[1]:isDead() or zs[1]:getHealth() < 1.95 - 0.7, "d=1 hurt", zs[1]:getHealth())
 	check(zs[3]:isUseless(), "d=3 dazed (useless)")
 	waitTicks(20)
@@ -270,7 +270,7 @@ local function sSneak()
 	check(by[z1] == 1, "whisper voice 10: adjacent only staggers", by[z1])
 	check(by[z2] == nil, "whisper voice 10: d=3 nothing", by[z2])
 	shout()
-	check(near(e0 - endurance(), 0.04 * (1.3 - 0.06 * 5) * 0.3, 0.002), "whisper costs x0.3", e0 - endurance())
+	check(near(e0 - endurance(), 0.135 * (1.3 - 0.06 * 5) * (1 - 0.05 * 10) * 0.3, 0.002), "whisper costs x0.3", e0 - endurance())
 	pl:setSneaking(false)
 	clearZombies()
 end
@@ -393,6 +393,65 @@ local function sDust()
 	end
 end
 
+-- endurance cost = 0.135 x (1.3 - 0.06 fitness) x (1 - 0.05 shout); Shout 0, Fitness 5: tired on the 2nd shout
+local function tiredLevel() return p():getMoodles():getMoodleLevel(MoodleType.ENDURANCE) end
+
+local function waitTired(maxTicks)
+	for _ = 1, maxTicks do
+		if tiredLevel() >= 1 then return true end
+		yield()
+	end
+	return tiredLevel() >= 1
+end
+
+local function sEndurance()
+	T.scenario = "endurance"
+	local pl = p()
+	T.noGod = true
+	pl:setGodMod(false)
+	waitTicks(2)
+	for _, c in ipairs({ { 0, 0, 0.1755 }, { 0, 5, 0.135 }, { 0, 10, 0.0945 }, { 5, 5, 0.10125 }, { 10, 5, 0.0675 }, { 10, 10, 0.04725 } }) do
+		reset(c[1], 5, c[2])
+		check(near(F().enduranceCost(pl), c[3], 0.0001), "cost at shout " .. c[1] .. " fitness " .. c[2], F().enduranceCost(pl))
+	end
+	reset(0, 5, 5)
+	F().overrides.EnduranceMultiplier = 2
+	check(near(F().enduranceCost(pl), 0.27, 0.0001), "sandbox multiplier 2", F().enduranceCost(pl))
+	F().overrides.EnduranceMultiplier = 0
+	check(F().enduranceCost(pl) == 0, "sandbox multiplier 0 is free", F().enduranceCost(pl))
+	F().overrides.EnduranceMultiplier = nil
+
+	-- real moodle: rested, one shout stays fine, the second one tires
+	reset(0, 5, 5)
+	waitTicks(120)
+	setEndurance(1.0)
+	waitTicks(60)
+	check(tiredLevel() == 0, "rested: no tired moodle", tiredLevel())
+	setEndurance(1.0)
+	shout()
+	check(near(1 - endurance(), 0.135, 0.003), "first shout costs 0.135", endurance())
+	waitTicks(120)
+	check(tiredLevel() == 0, "one shout: not tired yet", tiredLevel())
+	shout()
+	log("INFO", "endurance after two shouts", endurance())
+	check(endurance() < 0.75, "two shouts: below the tired line", endurance())
+	check(waitTired(600), "two shouts: tired moodle shows", tiredLevel())
+
+	-- runs out on the 8th shout and can still shout at 0
+	reset(0, 5, 5)
+	setEndurance(1.0)
+	for _ = 1, 7 do shout() end
+	check(endurance() > 0, "seven shouts: some endurance left", endurance())
+	shout()
+	check(endurance() == 0, "eight shouts: endurance 0", endurance())
+	F().lastShout = nil
+	shout()
+	check(F().lastShout ~= nil and near(F().lastShout.R, 30 * 1.0 * 0.8 * 0.5, 0.01), "shout at 0 still works at half loudness", F().lastShout and F().lastShout.R)
+
+	T.noGod = false
+	setEndurance(1.0)
+end
+
 ------------------------------------------------------------------ driver
 
 local function safe(fn, name)
@@ -416,8 +475,26 @@ local function run()
 	sStages()
 	sWindows()
 	sDust()
+	sEndurance()
 	reset(0, 5, 5)
 	p():getInventory():clear()
+end
+
+-- only what the endurance change touches: hook installed, cost in the shout paths, the new scenario
+function T.startChanged()
+	T.pass, T.fail = 0, 0
+	T.done = false
+	T.co = coroutine.create(function()
+		safe(sInstall, "install")
+		sLine()
+		sQuiet()
+		sSneak()
+		sEndurance()
+		reset(0, 5, 5)
+		p():getInventory():clear()
+		T.done = true
+	end)
+	log("start changed scenarios")
 end
 
 function T.start()

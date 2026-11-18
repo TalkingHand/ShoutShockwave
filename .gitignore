@@ -4,3 +4,4 @@ mpenv/
 Thumbs.db
 .DS_Store
 *.bak
+.pzt_plan.md

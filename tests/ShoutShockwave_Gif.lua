@@ -202,6 +202,7 @@ end
 -- second part, run only after the precheck picture was checked
 local function shoot()
 	local pl, wx, wy = G.pl, G.wx, G.wy
+	PZTestUnprotect = true        -- harness keeps him invisible otherwise
 	pl:setInvisible(false)         -- now let them come
 	local list = getCell():getZombieList()
 	for i = 0, list:size() - 1 do local z = list:get(i); z:setUseless(false); z:setTarget(pl) end
@@ -221,6 +222,7 @@ local function shoot()
 		waitTicks(G.EVERY)
 	end
 	G.frames = f
+	PZTestUnprotect = nil
 	pl:setInvisible(true)
 	log("shot done, client kept running")
 end
