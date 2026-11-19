@@ -1,0 +1,51 @@
+Shout Shockwave 让你的大喊变成武器。练习新技能 [b]Shout[/b],你的吼声就能让周围的僵尸踉跄、倒地、发懵,最终受到伤害,还能震碎附近建筑的窗户。
+
+[b]Shout 等级越高,解锁的效果越强;声音越大,波及得越远。[/b]
+
+本模组的技能名和选项在游戏中以英文显示。
+
+[h2]功能[/h2]
+[list]
+[*][b]技能解锁:[/b]2 级踉跄,4 级击倒,6 级发懵(僵尸在几秒内失去目标),8 级造成伤害。0-1 级还没有效果。新解锁的效果作用于最近的僵尸,越早解锁的效果波及越远。受到较强效果的僵尸,也会同时受到所有较弱的效果。
+[*][b]声音越大,冲击越强:[/b]力量让声音稍大一些,Shout 则大很多;等级低时会比原版稍小。右手装备扩音喇叭,或手持哨子、口琴,会像原版一样让声音更大。潜行时大喊的效果弱得多。
+[*][b]距离:[/b]冲击随距离减弱。坚韧的僵尸更能抵抗,受伤的僵尸更容易倒下。距离的计算方式与原版声音相同:在另一个房间,或隔着室内与室外交界的僵尸,会被视为稍远一些,上下楼层也能波及。
+[*][b]窗户:[/b]Shout 8 级起,冲击会震碎附近建筑的窗户,同样有玻璃碎裂声和房屋警报。钉了木板的窗户和打开的窗户不受影响,车窗永远不会被打碎。
+[*][b]消耗耐力,没有冷却:[/b]每次大喊都会消耗耐力(体格和 Shout 等级越高,消耗越少)。疲惫时声音会变小,冲击也会变弱。
+[*][b]经验:[/b]单靠大喊只能把 Shout 练到 2 级。之后需要让吼声影响僵尸才能获得经验(每次大喊有上限)。击倒僵尸还会获得少量力量经验。
+[*][b]视觉与音效:[/b]地面上随等级变大的冲击波圆环、低沉的轰鸣声(4 级起),以及被击倒僵尸身上扬起的尘土(8 级起)。
+[/list]
+
+[h2]沙盒选项[/h2]
+位于 [b]Shout Shockwave[/b] 页面。
+[table]
+[tr][th]选项[/th][th]默认值[/th][th]说明[/th][/tr]
+[tr][td]Shout: stagger[/td][td]开启[/td][td]Shout 2 级解锁。[/td][/tr]
+[tr][td]Shout: knock down[/td][td]开启[/td][td]Shout 4 级解锁。[/td][/tr]
+[tr][td]Shout: daze[/td][td]开启[/td][td]Shout 6 级解锁。[/td][/tr]
+[tr][td]Shout: damage[/td][td]开启[/td][td]Shout 8 级解锁。大喊可以伤害甚至杀死僵尸。[/td][/tr]
+[tr][td]Shout damage multiplier[/td][td]1.0[/td][td]0-5。设为 1 时,熟练的幸存者用扩音喇叭大喊,能杀死身旁大多数普通僵尸。[/td][/tr]
+[tr][td]Shout endurance cost multiplier[/td][td]1.0[/td][td]0-5。设为 0 时大喊不消耗耐力。[/td][/tr]
+[tr][td]Shout: break windows[/td][td]开启[/td][td]Shout 8 级起生效。[/td][/tr]
+[tr][td]Shout window range multiplier[/td][td]1.0[/td][td]0.1-5。设为 1 时,Shout 8 级的大喊会震碎约 13 格内的所有窗户,熟练者用扩音喇叭则约 20 格。[/td][/tr]
+[/table]
+
+[h2]模组选项[/h2]
+在 游戏选项 > 模组 > Shout Shockwave 中,每位玩家各自设置:[b]Shockwave ring[/b](冲击波圆环)和 [b]Dust on knocked-down zombies[/b](被击倒僵尸的尘土),默认都开启。
+
+[h2]限制[/h2]
+[list]
+[*]在车内大喊只是普通的原版大喊,没有任何效果。
+[*]当你的喊声比原版小时(等级低或疲惫),驯服的动物不会闻声而来。
+[*]已在单人游戏中测试,尚未在多人游戏中测试。
+[/list]
+
+[h2]兼容性[/h2]
+[list]
+[*]纯 Lua,不替换任何原版文件。通过 Q 键、动作菜单和手柄发出的大喊都会生效。
+[*]多人游戏中由服务器计算效果,再由负责模拟各个僵尸的客户端执行,因此服务器和客户端都需要安装本模组。
+[*]可以添加到现有存档。移除本模组后,Shout 技能也会消失。
+[/list]
+
+Source: https://github.com/TalkingHand/ShoutShockwave
+
+[url=https://ko-fi.com/talkinghands2285][img]https://raw.githubusercontent.com/TalkingHand/ShoutShockwave/main/art/kofi_button.png[/img][/url]

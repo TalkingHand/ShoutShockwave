@@ -1,0 +1,49 @@
+Shout Shockwave turns your shout into a weapon. Train the new [b]Shout[/b] skill and a yell staggers, knocks down, dazes and finally hurts the zombies around you, and shatters the windows of nearby buildings.
+
+[b]Each Shout level unlocks a stronger effect, and the louder you are, the further it reaches.[/b]
+
+[h2]Features[/h2]
+[list]
+[*][b]Skill unlocks:[/b] level 2 stagger, level 4 knock down, level 6 daze (zombies lose their target for a few seconds), level 8 damage. Levels 0-1 have no effect yet. Each new effect hits the closest zombies, and the earlier ones reach further. A zombie hit by a stronger effect also gets all the weaker ones.
+[*][b]Louder shout, bigger blast:[/b] Strength makes you a little louder, Shout a lot louder; at low levels you are a bit quieter than vanilla. A Megaphone in your main hand, or a Whistle or Harmonica in hand, raises it further, as in vanilla. A shout while sneaking is much weaker.
+[*][b]Distance:[/b] the blast weakens with distance. Tough zombies resist, wounded ones go down more easily. Distance is measured the way vanilla measures sound: zombies in another room, or on the other side of the line between indoors and outdoors, count as a bit further away, and the floors above and below are reached too.
+[*][b]Windows:[/b] from Shout level 8 the blast breaks nearby building windows, with the glass sound and house alarms. Boarded and open windows are spared, and vehicle windows are never touched.
+[*][b]Endurance, no cooldown:[/b] every shout costs endurance (less with higher Fitness and Shout). When you are tired, your voice gets quieter and the blast weaker.
+[*][b]XP:[/b] shouting alone trains Shout up to level 2. After that, XP comes from zombies your shout affects (capped per shout). Knocking zombies down also gives a little Strength XP.
+[*][b]Effects:[/b] a shockwave ring on the ground that grows with your level, a low rumble (level 4+) and dust on knocked-down zombies (level 8+).
+[/list]
+
+[h2]Sandbox options[/h2]
+On the [b]Shout Shockwave[/b] page.
+[table]
+[tr][th]Option[/th][th]Default[/th][th]Description[/th][/tr]
+[tr][td]Shout: stagger[/td][td]On[/td][td]Unlocked at Shout level 2.[/td][/tr]
+[tr][td]Shout: knock down[/td][td]On[/td][td]Unlocked at Shout level 4.[/td][/tr]
+[tr][td]Shout: daze[/td][td]On[/td][td]Unlocked at Shout level 6.[/td][/tr]
+[tr][td]Shout: damage[/td][td]On[/td][td]Unlocked at Shout level 8. Shouts can hurt and kill zombies.[/td][/tr]
+[tr][td]Shout damage multiplier[/td][td]1.0[/td][td]0-5. At 1, a loud megaphone shout from a skilled survivor kills most normal zombies next to them.[/td][/tr]
+[tr][td]Shout endurance cost multiplier[/td][td]1.0[/td][td]0-5. 0 makes shouting free.[/td][/tr]
+[tr][td]Shout: break windows[/td][td]On[/td][td]From Shout level 8.[/td][/tr]
+[tr][td]Shout window range multiplier[/td][td]1.0[/td][td]0.1-5. At 1, a level 8 shout breaks every window within about 13 tiles, a skilled megaphone shout within about 20.[/td][/tr]
+[/table]
+
+[h2]Mod options[/h2]
+Options > Mods > Shout Shockwave, set per player: [b]Shockwave ring[/b] and [b]Dust on knocked-down zombies[/b] (both on by default).
+
+[h2]Limits[/h2]
+[list]
+[*]A shout from inside a vehicle is a plain vanilla shout, with no effects.
+[*]When your shout is quieter than vanilla (low skill or tired), tamed animals do not come to it.
+[*]Tested in single player. Multiplayer is not tested yet.
+[/list]
+
+[h2]Compatibility[/h2]
+[list]
+[*]Lua only, no vanilla files replaced. Shouts from the Q key, the emote wheel and the controller all go through it.
+[*]In multiplayer the server works out the effects and the client that runs each zombie applies them, so the mod must be on the server and on the clients.
+[*]Safe to add to an existing save. Removing it removes the Shout skill.
+[/list]
+
+Source: https://github.com/TalkingHand/ShoutShockwave
+
+[url=https://ko-fi.com/talkinghands2285][img]https://raw.githubusercontent.com/TalkingHand/ShoutShockwave/main/art/kofi_button.png[/img][/url]
