@@ -1,4 +1,7 @@
 {
+  "IsoGridSquare": [
+    "getRoom"
+  ],
   "IsoZombie": [
     "knockDown",
     "setStaggerBack",

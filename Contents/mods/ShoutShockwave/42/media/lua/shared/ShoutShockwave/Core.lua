@@ -165,6 +165,24 @@ end
 -- evaluate a shout: who gets what. Runs where zombie positions are known
 -- (single player, or the server in multiplayer).
 ------------------------------------------------------------------------
+-- Same distance rules as vanilla WorldSoundManager.getSoundAttract (42.22.2): a floor counts as 3 tiles;
+-- different rooms multiply the squared distance by 1.2, and by 1.4 more when one side is outdoors (no room).
+-- Walls and doors are not checked, as in vanilla. Zombie hearing is left out on purpose: same room = old result.
+F.FLOOR_TILES = 3
+F.ROOM_DIFF, F.ROOM_OUTDOOR = 1.2, 1.4
+
+function F.roomFactor(roomA, roomB)
+	if roomA == roomB then return 1 end
+	if roomA == nil or roomB == nil then return F.ROOM_DIFF * F.ROOM_OUTDOOR end
+	return F.ROOM_DIFF
+end
+
+-- distance after the vanilla room penalty; floors = whole floors between the two
+function F.soundDistance(dx, dy, floors, roomFactor)
+	local dz = floors * F.FLOOR_TILES
+	return math.sqrt((dx * dx + dy * dy + dz * dz) * roomFactor)
+end
+
 -- shout = { x, y, z, R, sneaking, voice }
 function F.evaluate(shout)
 	local k = F.unlockedCount(shout.voice)
@@ -176,13 +194,19 @@ function F.evaluate(shout)
 	local maxRange = Rp * sneak * F.HEALTH_MAX / lowest
 	local cell = getCell()
 	if not cell then return out end
+	local shoutFloor = math.floor(shout.z)
+	local shoutSq = cell:getGridSquare(math.floor(shout.x), math.floor(shout.y), shoutFloor)
 	local list = cell:getZombieList()
 	for i = 0, list:size() - 1 do
 		local z = list:get(i)
-		if z and not z:isDead() and math.abs(z:getZ() - shout.z) < 1 then
+		if z and not z:isDead() then
 			local dx, dy = z:getX() - shout.x, z:getY() - shout.y
-			local d = math.sqrt(dx * dx + dy * dy)
+			local zFloor = math.floor(z:getZ())
+			local floors = zFloor - shoutFloor
+			local d = F.soundDistance(dx, dy, floors, 1)
 			if d <= maxRange then
+				local zSq = cell:getGridSquare(math.floor(z:getX()), math.floor(z:getY()), zFloor)
+				if shoutSq and zSq then d = F.soundDistance(dx, dy, floors, F.roomFactor(shoutSq:getRoom(), zSq:getRoom())) end
 				local I = Rp / math.max(d, 1) * sneak * F.healthFactor(z)
 				local e = F.highestEffect(I, k)
 				if e > 0 then

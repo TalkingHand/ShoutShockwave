@@ -203,6 +203,90 @@ local function sLine()
 	clearZombies()
 end
 
+-- vanilla sound distance: floors = 3 tiles, other room x1.2, indoors/outdoors x1.68 on the squared distance
+local function sSoundDistance()
+	T.scenario = "soundDistance"
+	local f = F()
+	local a, b = {}, {}
+	check(f.roomFactor(nil, nil) == 1 and f.roomFactor(a, a) == 1, "same room or both outdoors: no penalty")
+	check(near(f.roomFactor(a, b), 1.2, 0.0001), "different rooms x1.2", f.roomFactor(a, b))
+	check(near(f.roomFactor(a, nil), 1.68, 0.0001) and near(f.roomFactor(nil, b), 1.68, 0.0001), "indoors/outdoors x1.68", f.roomFactor(a, nil))
+	check(near(f.soundDistance(3, 4, 0, 1), 5, 0.0001), "same floor, same room: plain distance", f.soundDistance(3, 4, 0, 1))
+	check(near(f.soundDistance(0, 4, 1, 1), 5, 0.0001), "one floor = 3 tiles", f.soundDistance(0, 4, 1, 1))
+	check(near(f.soundDistance(0, 4, -1, 1), 5, 0.0001), "floor below counts the same", f.soundDistance(0, 4, -1, 1))
+	check(near(f.soundDistance(10, 0, 0, 1.68), 10 * math.sqrt(1.68), 0.0001), "room penalty scales the distance by its root", f.soundDistance(10, 0, 0, 1.68))
+end
+
+-- real squares: a zombie across the indoor/outdoor line gets the x1.68 distance
+local function sSoundRooms()
+	T.scenario = "soundRooms"
+	local pl = p()
+	reset(8, 5, 5)
+	local cell, px, py, pz = getCell(), math.floor(pl:getX()), math.floor(pl:getY()), math.floor(pl:getZ())
+	local home = { pl:getX(), pl:getY() }
+	-- look around for real square pairs 2-3 tiles apart: same room, two rooms, room and outdoors
+	local pairsFound = {}
+	for x = px - 60, px + 60 do
+		for y = py - 60, py + 60 do
+			local a = cell:getGridSquare(x, y, pz)
+			if a and a:getRoom() ~= nil and a:isFree(false) then
+				for _, c in ipairs({ { 2, 0 }, { -2, 0 }, { 0, 2 }, { 0, -2 }, { 3, 0 }, { -3, 0 }, { 0, 3 }, { 0, -3 } }) do
+					local b = cell:getGridSquare(x + c[1], y + c[2], pz)
+					if b and b:isFree(false) then
+						local kind = b:getRoom() == nil and "inOut" or (b:getRoom() == a:getRoom() and "same" or "rooms")
+						pairsFound[kind] = pairsFound[kind] or { x = x, y = y, dx = c[1], dy = c[2] }
+					end
+				end
+			end
+		end
+	end
+	for _, c in ipairs({ { "same", 1 }, { "rooms", 1.2 }, { "inOut", 1.68 } }) do
+		local f = pairsFound[c[1]]
+		if not f then
+			log("INFO", "soundRooms: no square pair for", c[1], "- not checked")
+		else
+			clearZombies()
+			pl:setX(f.x + 0.5); pl:setY(f.y + 0.5); pl:setLastX(f.x + 0.5); pl:setLastY(f.y + 0.5)
+			waitTicks(5)
+			local z = spawnZombie(f.dx, f.dy, 1.95)
+			waitTicks(2)
+			local d = math.sqrt((z:getX() - pl:getX()) ^ 2 + (z:getY() - pl:getY()) ^ 2)
+			local s = { x = pl:getX(), y = pl:getY(), z = pl:getZ(), R = F().loudness(pl, 1.0), sneaking = false, voice = 8 }
+			local hit
+			for _, r in ipairs(F().evaluate(s)) do if r.zombie == z then hit = r end end
+			local wantI = F().effectRadius(s.R) / math.max(d * math.sqrt(c[2]), 1) * F().healthFactor(z)
+			check(hit ~= nil and near(hit.I, wantI, 0.001), "real squares " .. c[1] .. " x" .. c[2] .. " at " .. f.x .. "," .. f.y, hit and hit.I)
+		end
+	end
+	clearZombies()
+	pl:setX(home[1]); pl:setY(home[2]); pl:setLastX(home[1]); pl:setLastY(home[2])
+	waitTicks(5)
+end
+
+-- a zombie one floor up is reached, at the 3-tile floor distance
+local function sSoundFloors()
+	T.scenario = "soundFloors"
+	local pl = p()
+	reset(8, 5, 5)
+	local z = spawnZombie(2, 0, 1.95)
+	waitTicks(2)
+	local floor0 = math.floor(pl:getZ())
+	local oldZ = z:getZ()
+	z:setZ(floor0 + 1)
+	local s = { x = pl:getX(), y = pl:getY(), z = pl:getZ(), R = F().loudness(pl, 1.0), sneaking = false, voice = 8 }
+	local hit
+	for _, r in ipairs(F().evaluate(s)) do if r.zombie == z then hit = r end end
+	local cell = getCell()
+	local a = cell:getGridSquare(math.floor(pl:getX()), math.floor(pl:getY()), floor0)
+	local b = cell:getGridSquare(math.floor(z:getX()), math.floor(z:getY()), floor0 + 1)
+	local m = (a and b) and F().roomFactor(a:getRoom(), b:getRoom()) or 1
+	local d = F().soundDistance(z:getX() - pl:getX(), z:getY() - pl:getY(), 1, m)
+	local wantI = F().effectRadius(s.R) / math.max(d, 1) * F().healthFactor(z)
+	z:setZ(oldZ)
+	check(hit ~= nil and near(hit.I, wantI, 0.001), "zombie one floor up uses the floor distance", hit and hit.I)
+	clearZombies()
+end
+
 local function sXP()
 	T.scenario = "xp"
 	reset(0)
@@ -464,6 +548,9 @@ local function run()
 	safe(sInstall, "install")
 	safe(sRadius, "vanillaRadius")
 	safe(sMath, "math")
+	safe(sSoundDistance, "soundDistance")
+	sSoundRooms()
+	sSoundFloors()
 	sTough()
 	sXP()
 	sLine()
@@ -480,16 +567,23 @@ local function run()
 	p():getInventory():clear()
 end
 
--- only what the endurance change touches: hook installed, cost in the shout paths, the new scenario
+-- only what the sound distance change touches: every scenario that goes through F.evaluate
 function T.startChanged()
 	T.pass, T.fail = 0, 0
 	T.done = false
 	T.co = coroutine.create(function()
 		safe(sInstall, "install")
+		safe(sMath, "math")
+		safe(sSoundDistance, "soundDistance")
+		sSoundRooms()
+		sSoundFloors()
+		sTough()
+		sXP()
 		sLine()
-		sQuiet()
+		sToggles()
+		sKill()
 		sSneak()
-		sEndurance()
+		sDust()
 		reset(0, 5, 5)
 		p():getInventory():clear()
 		T.done = true
@@ -545,6 +639,14 @@ end
 function T.demoShout()
 	shout()
 	log("INFO", "demo windows broken:", F().lastWindows, "at", T.demoWin and T.demoWin.x, T.demoWin and T.demoWin.y)
+end
+
+-- rerun only the real-square room scenario (pzt live, same client)
+function T.roomsOnly()
+	T.pass, T.fail = 0, 0
+	T.done = false
+	T.co = coroutine.create(function() sSoundRooms(); T.done = true end)
+	log("start roomsOnly")
 end
 
 -- rerun only the windows scenario (pzt live, same client)

@@ -5,7 +5,7 @@ Project Zomboid Build 42 mod. Your shout becomes a weapon: train the new **Shout
 ## Features
 
 - **Shout skill unlocks the effects.** Level 2 stagger, 4 knock down, 6 daze, 8 damage and windows. Each new effect hits the closest zombies; earlier effects reach further. Stronger effects include the weaker ones.
-- **Louder shout, bigger blast.** Strength and Shout raise loudness; a megaphone, whistle or harmonica raise it as in vanilla. Strength of the blast = loudness ÷ distance, adjusted for zombie health (tough zombies resist).
+- **Louder shout, bigger blast.** Strength and Shout raise loudness; a megaphone, whistle or harmonica raise it as in vanilla. Strength of the blast = loudness ÷ distance, adjusted for zombie health (tough zombies resist). Distance follows vanilla sound: a floor counts as 3 tiles, another room ×1.2 and indoors↔outdoors ×1.68 on the squared distance (walls themselves are not checked, as in vanilla).
 - **Windows.** From level 8 the blast breaks nearby building windows (vanilla smash: sound and alarms). Boarded and open windows are spared; vehicle windows are never touched.
 - **Endurance, no cooldown.** Each shout costs endurance (less with Fitness and Shout level); tired shouts are quieter and weaker.
 - **XP.** Shouting alone trains Shout to level 2; after that XP comes from affected zombies (capped per shout). Knockdowns give a little Strength XP.
@@ -24,7 +24,7 @@ Lua only, no vanilla files replaced. All Lua shout callers (Q key, emote wheel, 
 
 ## Testing
 
-`pzt live` in this folder (PZTestHarness) runs `tests/ShoutShockwave_Test.lua`: hook, skill, vanilla radius rules, formulas, unlock ladder, real knockdown/stagger/daze/damage on spawned zombies, endurance, XP, windows, ring/dust/rumble stages. Single player only.
+`pzt live` in this folder (PZTestHarness) runs `tests/ShoutShockwave_Test.lua`: hook, skill, vanilla radius rules, formulas, vanilla sound distance on real room squares and floors, unlock ladder, real knockdown/stagger/daze/damage on spawned zombies, endurance, XP, windows, ring/dust/rumble stages. Single player only.
 
 ## Support
 

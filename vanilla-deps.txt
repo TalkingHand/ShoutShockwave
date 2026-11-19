@@ -28,3 +28,5 @@ assume	sound script clip "file = media/sound/..."	vanilla example generated/soun
 java-call	IsoGridSquare:getWindow, IsoWindow:isDestroyed/isBarricaded/IsOpen/isInvincible/smashWindow	window breaking (building windows only)
 assume	IsoWindow.smashWindow()	= smashWindow(false, true): sound "SmashWindow", world sound radius 10, alarm, GameClient/GameServer sync (zombie/iso/objects/IsoWindow.java)
 sandbox	ShoutShockwave.Windows	own option
+java-call	IsoCell:getGridSquare, IsoGridSquare:getRoom	room comparison for the effect distance
+assume	WorldSoundManager.getSoundAttract	zombie/WorldSoundManager.java: squared distance with z x 3; rooms differ -> x1.2; one side has no room -> x1.4 more; no wall or door check. Copied into F.roomFactor / F.soundDistance. Hearing multiplier deliberately not copied.
