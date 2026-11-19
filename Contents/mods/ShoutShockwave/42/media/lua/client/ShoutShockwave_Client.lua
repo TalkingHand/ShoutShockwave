@@ -230,13 +230,14 @@ function F.onCallout(player, vanilla, ...)
 	else
 		luaShout(player, doAnim, R, sneaking, shoutItem, megaphone)
 	end
-	local e = endurance - F.enduranceCost(player)
-	stats:set(CharacterStat.ENDURANCE, e > 0 and e or 0)
+	-- spent here for an immediate moodle; in multiplayer the server spends it on its own copy too
+	-- (the server's value is the one that stays, see F.spendEndurance)
+	F.spendEndurance(player)
 
 	local shout = { x = player:getX(), y = player:getY(), z = player:getZ(), R = R, sneaking = sneaking, voice = F.voiceLevel(player), source = player }
 	F.lastShout = shout
 	if isMP() then
-		sendClientCommand(player, F.MOD, "shout", { endurance = endurance })
+		sendClientCommand(player, F.MOD, "shout", {})
 		F.playVisuals(shout, nil, "self")
 	else
 		local results = F.resolve(player, shout, function() return true end)
@@ -283,8 +284,20 @@ local function findZombie(id)
 	return nil
 end
 
+-- the server's endurance after it spent a shout's cost; set at once so the moodle doesn't wait for
+-- the next once-a-second stats sync (which carries the same value)
+-- (player: test override, getPlayerByOnlineID is nil in single player)
+function F.onEnduranceCommand(args, player)
+	local pl = player or (args and getPlayerByOnlineID(args.id))
+	local v = args and tonumber(args.value)
+	if not pl or not pl:isLocalPlayer() or not v then return end
+	pl:getStats():set(CharacterStat.ENDURANCE, v)
+end
+
 local function onServerCommand(module, command, args)
-	if module ~= F.MOD or command ~= "fx" or not args then return end
+	if module ~= F.MOD or not args then return end
+	if command == "endurance" then return F.onEnduranceCommand(args) end
+	if command ~= "fx" then return end
 	local shooter = getPlayerByOnlineID(args.shooter)
 	local own = shooter ~= nil and shooter:isLocalPlayer()
 	if shooter and args.remote then

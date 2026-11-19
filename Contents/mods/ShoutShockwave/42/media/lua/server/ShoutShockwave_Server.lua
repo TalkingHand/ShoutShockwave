@@ -1,5 +1,7 @@
--- ShoutShockwave server side (multiplayer only). A client reports a shout; the server works out which
--- zombies are hit using its own copy of the player (skills, hands) and zombie positions,
+-- ShoutShockwave server side (multiplayer only). A client reports a shout; the server spends the
+-- endurance on its own copy of the player (the server owns player stats and sends them to the
+-- client every second, so the client's own subtraction alone snaps back), works out which
+-- zombies are hit using its copy of the player (skills, hands, endurance) and zombie positions,
 -- applies effects to the zombies it simulates, and tells every client the rest
 -- (the owning client applies them; everyone draws the effect).
 require "ShoutShockwave/Core"
@@ -8,16 +10,20 @@ local F = ShoutShockwave
 local lastShout = {}
 local MIN_GAP_MS = 200
 
-local function onClientCommand(module, command, player, args)
-	if module ~= F.MOD or command ~= "shout" or not player then return end
-	local now = getTimestampMs()
+-- exposed for the single-player test (sendServerCommand does nothing outside a server)
+function F.serverShout(player, args)
+	if not player or player:getVehicle() then return end
 	local key = player:getOnlineID()
+
+	-- the client already shouted (sound, text), so the cost is paid even when the flood guard
+	-- below drops the effects
+	local endurance, after = F.spendEndurance(player)
+	sendServerCommand(player, F.MOD, "endurance", { id = key, value = after })
+
+	local now = getTimestampMs()
 	if lastShout[key] and now - lastShout[key] < MIN_GAP_MS then return end
 	lastShout[key] = now
-	if player:getVehicle() then return end
 
-	local endurance = tonumber(args and args.endurance) or 1
-	if endurance < 0 then endurance = 0 elseif endurance > 1 then endurance = 1 end
 	local R = F.loudness(player, endurance)
 	local shout = {
 		x = player:getX(), y = player:getY(), z = player:getZ(),
@@ -35,5 +41,11 @@ local function onClientCommand(module, command, player, args)
 		R = R, sneaking = shout.sneaking, voice = shout.voice,
 		hits = hits, remote = rem,
 	})
+	return shout, results
+end
+
+local function onClientCommand(module, command, player, args)
+	if module ~= F.MOD or command ~= "shout" or not player then return end
+	F.serverShout(player, args)
 end
 Events.OnClientCommand.Add(onClientCommand)

@@ -536,6 +536,129 @@ local function sEndurance()
 	setEndurance(1.0)
 end
 
+-- wait ms of real time (cap in ticks); returns the summed game-time multiplier and the largest
+-- one-tick endurance rise seen (a snap-back shows as one big rise)
+local function watchEndurance(ms, maxTicks)
+	local t0, mult, jump, prev = getTimestampMs(), 0, 0, endurance()
+	for _ = 1, maxTicks do
+		yield()
+		mult = mult + getGameTime():getMultiplier()
+		local e = endurance()
+		if e - prev > jump then jump = e - prev end
+		prev = e
+		if getTimestampMs() - t0 >= ms then break end
+	end
+	return mult, jump, getTimestampMs() - t0
+end
+
+-- vanilla standing-still regen per unit of GameTime multiplier (IsoPlayer.updateEndurance, 42.22.2):
+-- ZomboidGlobals.ImobileEnduranceIncrease x sandbox regen x getRecoveryMod x (1 - 0.85 fatigue)
+local function standRegenPerMult()
+	local pl = p()
+	local base = (ZomboidGlobals and ZomboidGlobals.ImobileEnduranceIncrease) or (0.000093 / 3)
+	local ok1, regen = pcall(function() return getSandboxOptions():getEnduranceRegenMultiplier() end)
+	local ok2, rec = pcall(function() return pl:getRecoveryMod() end)
+	return base * (ok1 and regen or 1.8) * (ok2 and rec or 1.6)
+end
+
+-- bug 0.1.2: "the endurance a shout costs comes back almost at once". Shout, stand still for
+-- 6 s, and the endurance may only come back at the vanilla standing-still rate.
+local function sEnduranceSticks()
+	T.scenario = "enduranceSticks"
+	T.noGod = true
+	p():setGodMod(false)
+	waitTicks(2)
+	reset(0, 5, 5)
+	setEndurance(1.0)
+	waitTicks(30)
+	shout()
+	local after = endurance()
+	check(near(1 - after, 0.135, 0.003), "shout costs 0.135", after)
+	local mult, jump, ms = watchEndurance(6000, 1200)
+	local back = endurance() - after
+	local allowed = standRegenPerMult() * mult * 1.5 + 0.002
+	log("INFO", "enduranceSticks", "ms", ms, "multSum", mult, "back", back, "allowed", allowed, "biggest one-tick rise", jump)
+	check(ms >= 5000, "watched at least 5 s", ms)
+	check(back <= allowed, "comes back no faster than vanilla standing regen", back)
+	check(back < 0.135 * 0.25, "less than a quarter of the cost back after 6 s", back)
+	check(jump < 0.005, "no one-tick snap-back", jump)
+	check(endurance() < 1.0 - 0.1, "still well below the start", endurance())
+	T.noGod = false
+	setEndurance(1.0)
+end
+
+-- spam: shout every 10 ticks like a hammered Q key. Each shout must take endurance down (no
+-- snap-back between shouts), it runs out on the 8th, stays out, and the next shout is at half loudness.
+local function sSpam()
+	T.scenario = "spam"
+	T.noGod = true
+	p():setGodMod(false)
+	waitTicks(2)
+	reset(0, 5, 5)
+	setEndurance(1.0)
+	waitTicks(10)
+	local prev, falling = endurance(), true
+	for i = 1, 12 do
+		shout()
+		local e = endurance()
+		if prev > 0 and not (e < prev) then falling = false; log("INFO", "spam: shout", i, "did not lower endurance", prev, "->", e) end
+		prev = e
+		waitTicks(10)
+	end
+	check(falling, "every shout lowers endurance until 0", prev)
+	check(endurance() < 0.01, "twelve quick shouts: endurance used up", endurance())
+	local _, jump = watchEndurance(3000, 600)
+	check(endurance() < 0.02, "3 s later: still used up", endurance())
+	check(jump < 0.005, "no one-tick snap-back", jump)
+	check(tiredLevel() >= 3, "tired moodle level 3+", tiredLevel())
+	F().lastShout = nil
+	shout()
+	check(F().lastShout ~= nil and near(F().lastShout.R, 30 * 1.0 * 0.8 * 0.5, 0.01), "spammed shout is at half loudness", F().lastShout and F().lastShout.R)
+	T.noGod = false
+	setEndurance(1.0)
+end
+
+-- multiplayer path run in single player: the server spends endurance on its own copy of the player
+-- (MP: the server sends stats to the client every second, so only the server's value stays), uses
+-- its own endurance (not the client's word) for loudness, and pays even when the flood guard drops effects.
+-- sendServerCommand does nothing outside a server, so the client side is called directly.
+local function sServerAuthority()
+	T.scenario = "serverAuthority"
+	T.noGod = true
+	p():setGodMod(false)
+	waitTicks(2)
+	local pl = p()
+	check(type(F().serverShout) == "function", "server handler exposed", type(F().serverShout))
+	check(type(F().onEnduranceCommand) == "function", "client endurance handler exposed", type(F().onEnduranceCommand))
+	if type(F().serverShout) ~= "function" then T.noGod = false; return end
+	reset(0, 5, 5)
+	setEndurance(1.0)
+	local shout1 = F().serverShout(pl, {})
+	check(near(1 - endurance(), 0.135, 0.003), "server spends 0.135", endurance())
+	check(shout1 ~= nil and near(shout1.R, 24, 0.01), "server loudness from its endurance 1.0", shout1 and shout1.R)
+	local shout2 = F().serverShout(pl, {})
+	check(shout2 == nil, "second report within 200 ms: effects dropped", shout2)
+	check(near(1 - endurance(), 0.27, 0.003), "...but the cost is still paid", endurance())
+	-- a client claiming full endurance doesn't make the shout louder
+	setEndurance(0.05)
+	local t0 = getTimestampMs()
+	while getTimestampMs() - t0 < 300 do yield() end
+	local shout3 = F().serverShout(pl, { endurance = 1.0 })
+	check(shout3 ~= nil and near(shout3.R, 12, 0.01), "server ignores the client's endurance (half loudness at 0.05)", shout3 and shout3.R)
+	check(endurance() == 0, "server endurance floors at 0", endurance())
+	-- spam through the server path: 8 back-to-back reports use it all up
+	setEndurance(1.0)
+	for _ = 1, 8 do F().serverShout(pl, {}) end
+	check(endurance() == 0, "8 back-to-back server reports: endurance 0", endurance())
+	-- client side of the "endurance" command
+	F().onEnduranceCommand({ id = -1, value = 0.42 }, pl)
+	check(near(endurance(), 0.42, 0.0001), "client sets the server's endurance", endurance())
+	F().onEnduranceCommand({ id = -1, value = "x" }, pl)
+	check(near(endurance(), 0.42, 0.0001), "bad value ignored", endurance())
+	T.noGod = false
+	setEndurance(1.0)
+end
+
 ------------------------------------------------------------------ driver
 
 local function safe(fn, name)
@@ -563,8 +686,31 @@ local function run()
 	sWindows()
 	sDust()
 	sEndurance()
+	sEnduranceSticks()
+	sSpam()
+	sServerAuthority()
 	reset(0, 5, 5)
 	p():getInventory():clear()
+end
+
+-- 0.1.3 endurance fix: scenarios whose code changed (endurance spending, server handler) + the new ones
+function T.startFix()
+	T.pass, T.fail = 0, 0
+	T.done = false
+	T.co = coroutine.create(function()
+		safe(sInstall, "install")
+		sLine()
+		sQuiet()
+		sSneak()
+		sEndurance()
+		sEnduranceSticks()
+		sSpam()
+		sServerAuthority()
+		reset(0, 5, 5)
+		p():getInventory():clear()
+		T.done = true
+	end)
+	log("start fix scenarios")
 end
 
 -- only what the sound distance change touches: every scenario that goes through F.evaluate

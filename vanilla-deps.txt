@@ -7,7 +7,7 @@ lua-call	ISVehicleMenu.onKeyPressed	client/Vehicles/ISUI/ISVehicleMenu.lua: pass
 lua-call	ISDPadWheels.onShout	client/ISUI/ISDPadWheels.lua: -> Callout()
 lua-call	ISUIElement	client/ISUI/ISUIElement.lua: overlay for ring/puff/flash drawing
 java-call	see tools/java-calls.json	checked with _tools/jcheck.py
-event	OnGameStart, OnTick, OnClientCommand, OnServerCommand	module "ShoutShockwave", commands "shout" (client->server) and "fx" (server->clients)
+event	OnGameStart, OnTick, OnClientCommand, OnServerCommand	module "ShoutShockwave", commands "shout" (client->server), "fx" (server->clients) and "endurance" (server->shouting client, {id, value})
 data	ItemTag.MEGAPHONE	megaphone detection, same as vanilla Callout
 data	Perks.Strength, Perks.Fitness, Perks.PhysicalCategory	PhysicalCategory is the parent of our Voice perk (media/perks.txt)
 data	CharacterStat.ENDURANCE	read/write endurance
@@ -30,3 +30,6 @@ assume	IsoWindow.smashWindow()	= smashWindow(false, true): sound "SmashWindow", 
 sandbox	ShoutShockwave.Windows	own option
 java-call	IsoCell:getGridSquare, IsoGridSquare:getRoom	room comparison for the effect distance
 assume	WorldSoundManager.getSoundAttract	zombie/WorldSoundManager.java: squared distance with z x 3; rooms differ -> x1.2; one side has no room -> x1.4 more; no wall or door check. Copied into F.roomFactor / F.soundDistance. Hearing multiplier deliberately not copied.
+assume	MP player stats owned by the server	zombie/network/NetworkPlayerManager.update: server sends PlayerStats (all CharacterStat incl. ENDURANCE, PlayerStatsPacket -> Stats.load) to each client every 1000 ms; IsoPlayer.updateEndurance skips GameClient.client. So a client-side Stats:set is overwritten within 1 s; F.spendEndurance runs on the server (F.serverShout) and the server's value is sent back with our "endurance" command. If vanilla stops syncing stats this way, the client's own subtraction is still there (both are absolute values, nothing is spent twice).
+assume	vanilla endurance regen (test bound only)	IsoPlayer.updateEndurance standing still: + ZomboidGlobals.ImobileEnduranceIncrease (defines.lua 0.000031) x SandboxOptions.getEnduranceRegenMultiplier (1.8/1.3/1.0/0.7/0.4) x getRecoveryMod (Fitness 0..10 -> 0.7..1.6) x (1 - 0.85 fatigue) x GameTime multiplier per tick; tests/enduranceSticks uses it as the upper bound.
+assume	god mode / unlimited endurance reset endurance every frame	IsoGameCharacter: isGodMod() -> stats.reset(ENDURANCE); updateEndurance: isUnlimitedEndurance() -> reset. With either cheat on, the shout cost cannot stick (vanilla behaviour, not ours).

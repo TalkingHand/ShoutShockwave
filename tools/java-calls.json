@@ -40,7 +40,8 @@
     "isLocalPlayer",
     "isBehind",
     "getOnlineID",
-    "Callout"
+    "Callout",
+    "getRecoveryMod"
   ],
   "InventoryItem": [
     "hasTag",
@@ -78,5 +79,8 @@
     "getTimestampMs",
     "getTexture",
     "isClient"
+  ],
+  "SandboxOptions": [
+    "getEnduranceRegenMultiplier"
   ]
 }

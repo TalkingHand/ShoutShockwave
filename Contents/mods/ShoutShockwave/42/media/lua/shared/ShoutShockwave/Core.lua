@@ -122,6 +122,19 @@ function F.enduranceCost(player)
 	return c
 end
 
+-- takes the shout's endurance cost from this machine's copy of the player; returns before, after.
+-- Endurance is owned by single player or the server: in multiplayer the server sends every player's
+-- stats to its client once a second (NetworkPlayerManager -> PlayerStats packet), so a value set
+-- only on the client snaps back within a second. The server must spend it too (0.1.3 fix).
+function F.spendEndurance(player)
+	local stats = player:getStats()
+	local before = stats:get(CharacterStat.ENDURANCE)
+	local after = before - F.enduranceCost(player)
+	if after < 0 then after = 0 end
+	stats:set(CharacterStat.ENDURANCE, after)
+	return before, after
+end
+
 function F.effectRadius(R)
 	if R <= F.SOFTCAP_FROM then return R end
 	return F.SOFTCAP_FROM * (R / F.SOFTCAP_FROM) ^ F.SOFTCAP_EXP
