@@ -122,14 +122,16 @@ end
 F.RING_ALPHA = { [0] = 0.3, 0.45, 0.6, 0.8, 1.0 }
 
 -- rumble: silent below Voice 4, then volume follows the shout's effect loudness R'; the file is
--- twice the S5 sample (+6 dB), so volume 1.0 = 2x the sample at the loudest shout (R' 65).
+-- twice the S5 sample (+6 dB). F.RUMBLE_GAIN scales it all: 0.7 since 11-21 (user: 30% quieter),
+-- so the loudest shout (R' 65) plays at 0.7 = 1.4x the sample.
 F.RUMBLE_FROM_VOICE = 4
 F.RUMBLE_FULL_AT = 65
+F.RUMBLE_GAIN = 0.7
 function F.rumbleVolume(shout)
 	if (shout.voice or 0) < F.RUMBLE_FROM_VOICE then return 0 end
 	local v = F.effectRadius(shout.R) * (shout.sneaking and F.SNEAK_FACTOR or 1) / F.RUMBLE_FULL_AT
 	if v > 1 then v = 1 end
-	return v
+	return v * F.RUMBLE_GAIN
 end
 
 -- dust on knocked-down zombies: from Voice 8, size and opacity 0.7 at Voice 8 -> 1.0 at Voice 10

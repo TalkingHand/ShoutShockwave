@@ -393,8 +393,8 @@ local function sStages()
 	end
 	reset(4, 5)
 	local s4 = { R = F().loudness(pl, 1.0), voice = 4, sneaking = false }
-	check(near(F().rumbleVolume(s4), F().effectRadius(s4.R) / 65, 0.001), "voice 4 rumble = R'/65", F().rumbleVolume(s4))
-	check(near(F().rumbleVolume({ R = 1000, voice = 10 }), 1.0), "loudest rumble = 1.0 (2x sample)")
+	check(near(F().rumbleVolume(s4), F().effectRadius(s4.R) / 65 * 0.7, 0.001), "voice 4 rumble = R'/65 x 0.7", F().rumbleVolume(s4))
+	check(near(F().rumbleVolume({ R = 1000, voice = 10 }), 0.7), "loudest rumble = 0.7 (1.4x sample)")
 	check(F().rumbleVolume({ R = 1000, voice = 3 }) == 0, "voice 3 rumble 0 even when loud")
 	reset(8, 5)
 	shout()
